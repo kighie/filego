@@ -24,6 +24,12 @@ func (s SenderInfo) String() string {
 }
 
 func Send(s SenderInfo) error {
+	fileName, length, err := fio.GetFileInfo(s.FilePath)
+	s.FileName = fileName
+	s.FileSize = length
+	
+	log.Println (s)
+	
 	conn, err := net.Dial("tcp", s.ReceiverAddr) 
 	defer conn.Close()
 	
@@ -31,27 +37,73 @@ func Send(s SenderInfo) error {
 		return err
 	}
 	
-	communicator, err := protocol.NewCommunicator(conn, conn)
+	communicator, err := protocol.NewCommunicator(conn)
 
 	if err != nil {
 		return err
 	}	
 
-	fileName, length, err := fio.GetFileInfo(s.FilePath)
-	s.FileName = fileName
-	s.FileSize = length
-	
-	fmt.Println (s)
-	
 	var header protocol.Header
 	
-	header, err = communicator.WriteHeader(protocol.MSG_BEFORE_SEND, length, fileName)
+	//[1] Sending MSG_BEFORE_SEND
+	header, err = communicator.WriteHeader(protocol.MSG_BEFORE_SEND, protocol.MSG_LENGTH_UNDEFINED, "")
+	
+	if err != nil {
+		return err
+	}	
+	
+	communicator.WriteInt64(length)
+	communicator.WriteTextField(fileName)
+	
+	communicator.Flush()
+	
+	log.Println("Send [MSG_BEFORE_SEND]::",header)
+	
+	//[2] Receive MSG_PREPARE
+	header, err = communicator.ReadHeader()
+		
+	if err != nil {
+		log.Println("Read response header :: ", err)
+		return err
+	}
+	
+	var udpPort int16
+	
+	udpPort, err = communicator.ReadInt16()
+	
+	log.Println("Response[MSG_PREPARE]::", header, " , udp port=" , udpPort)
+	
+	var sessionid = header.SessionId
+	
+	//[3] Sending MSG_BEFORE_SEND
+	header, err = communicator.WriteHeader(protocol.MSG_SEND, length, sessionid)
 	
 	if err != nil {
 		return err
 	}	
 	
 	log.Println(header)
-//	communicator.
+	
+	communicator.Flush()
+	
+	_, err = fio.LoadFileTo(s.FilePath, communicator.GetWriter())
+	
+	
+	if err != nil {
+		log.Fatal("send file to receiver ", err)
+	}
+	
+	communicator.Flush()
+	
 	return nil
 }
+
+func SendFile(s SenderInfo) {
+	
+}
+
+
+func SendFileUdp(s SenderInfo) {
+	
+}
+

@@ -22,10 +22,13 @@ func WriteInt64(w io.Writer, i int64) error  {
 }
 
 
-func ReadInt64(r io.Reader) int64 {
+func ReadInt64(r io.Reader) (int64, error) {
 	var b = make([]byte, INT64)
-	r.Read(b)
-	return BytesToInt64(b)
+	_,err := r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	return BytesToInt64(b), nil
 }
 
 func Int64ToBytes(i int64) []byte {
@@ -47,10 +50,13 @@ func WriteInt16(w io.Writer, i int16) error  {
 }
 
 
-func ReadInt16(r io.Reader) int16 {
+func ReadInt16(r io.Reader) (int16, error) {
 	var b = make([]byte, INT16)
-	r.Read(b)
-	return BytesToInt16(b)
+	_,err := r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	return BytesToInt16(b), nil
 }
 
 func Int16ToBytes(i int16) []byte {
@@ -63,3 +69,13 @@ func Int16ToBytes(i int16) []byte {
 func BytesToInt16(bs []byte) int16 {
 	return int16(binary.BigEndian.Uint16(bs))
 }
+
+func ReadByte(r io.Reader) (byte, error) {
+	var b = make([]byte, 1)
+	_,err := r.Read(b)
+	if err != nil {
+		return 0, err
+	}
+	return b[0], nil
+}
+

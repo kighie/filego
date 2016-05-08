@@ -26,6 +26,6 @@ func ParseOptions() SenderInfo {
 		log.Fatalln("-file is not set.")
 	} 
 	
-	log.Println(info)
+//	log.Println(info)
 	return info
 }

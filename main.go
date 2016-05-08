@@ -46,7 +46,7 @@ func startReceiver() {
 func startSender() {
 	sendInfo := sender.ParseOptions()
 	err := sender.Send(sendInfo)
-
+	
 	if err != nil {
 		log.Fatalln(sendInfo, err)
 	}
