@@ -2,6 +2,7 @@ package sender
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 	"strconv"
 )
@@ -16,7 +17,7 @@ func sendTest(count int, filePath string){
 	
 	var si = SenderInfo {
 		ReceiverAddr:"192.168.219.118:3000",
-		FileName: "test_data_" + strconv.Itoa(count) + ".dat",
+		FileName: "test_data_" + strconv.Itoa(rand.Int())+"-" +strconv.Itoa(count) + ".dat",
 		FilePath:filePath,
 	}
 	
