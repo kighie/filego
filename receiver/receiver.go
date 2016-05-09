@@ -100,7 +100,7 @@ func Handle (config ReceiverConfig, sessionMap map[string]Session, conn net.Conn
 					break
 				}
 			case protocol.MSG_SEND :
-				if err := session.doSend(&communicator) ; err != nil {
+				if err := session.receive(header, &communicator) ; err != nil {
 					log.Println("Proc. MSG_SEND :: ", err)
 					break
 				}
@@ -125,6 +125,7 @@ type Session struct {
 	config ReceiverConfig
 	fileLen int64
 	fileName string
+	fileFullPath string
 }
 
 func (s Session) String() string {
@@ -183,26 +184,49 @@ func (s *Session)doBeforeSend(communicator *protocol.Communicator) error {
 	return nil
 }
 
-func (s *Session)doSend(communicator *protocol.Communicator) error {
+func (s *Session)receive(header protocol.Header, communicator *protocol.Communicator) error {
+	var stopWatch common.StopWatch
+	stopWatch.Start()
+	
+	// Receive File
 	file ,err := fio.MakeFile(s.config.FileDir, s.fileName)
 	if err != nil {
 		return err
 	}
 	
+	
+//	fmt.Println("First byte:", fb)
+	
 	var length int64
-	length,err = fio.SaveFileTo(file, communicator.GetReader())
+	length,err = fio.SaveFileTo(file, communicator.GetReader(), header.Length)
 	
 	if length != s.fileLen {
 		return common.NewError("File Length is not the same. meta=", s.fileLen, ", real=" , length)
 	}
 	
-	log.Println("File Received::", s.fileName ,", size:", s.fileLen, ", file:" , file.Name() )
+	s.fileFullPath = file.Name()
+	s.fileLen = length
+	
+	log.Println("File Received::", s.fileName ,", size:", s.fileLen, ", file:" , s.fileFullPath, 
+		", time=", stopWatch.Mark() )
 	
 	
-//	if err != nil {
-//		return err
-//	}
+	// Send Reponse MSG_RECEIVED
+	header, err = communicator.WriteHeader(protocol.MSG_RECEIVED, -1, s.uid)
 	
+	if err != nil {
+		return err
+	}	
+	
+	communicator.WriteTextField("OK")
+	communicator.WriteInt64(s.fileLen)
+	
+	communicator.Flush()
+	
+	
+	log.Println("Send[MSG_RECEIVED]::" , header, ", fileLen=" , s.fileLen, ", time=", stopWatch.Mark())
+	
+	log.Println("Ellapsed time:", stopWatch.Stop())
 	return err
 }
 

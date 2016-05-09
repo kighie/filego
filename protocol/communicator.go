@@ -58,6 +58,16 @@ func (h Header) String() string {
 	return fmt.Sprint("HEADER {type=",h.Type,", len=", h.Length, ", session=", h.SessionId, "}")
 }
 
+
+func (c Communicator)GetWriter() *bufio.Writer {
+	return c.writer
+}
+
+func (c Communicator)GetReader() *bufio.Reader {
+	return c.reader
+}
+
+
 func (c *Communicator)WriteHeader(msgType byte, length int64, sessionId string) (Header, error) {
 	header := Header{Type:msgType, Length:length, SessionId:sessionId}
 	
@@ -69,16 +79,6 @@ func (c *Communicator)WriteHeader(msgType byte, length int64, sessionId string) 
 	
 	return header, nil
 }
-
-
-func (c Communicator)GetWriter() *bufio.Writer {
-	return c.writer
-}
-
-func (c Communicator)GetReader() *bufio.Reader {
-	return c.reader
-}
-
 
 // 
 func (c *Communicator)ReadHeader() (Header, error) {
@@ -114,21 +114,6 @@ func (c *Communicator)Write(data []byte) (int,error) {
 	return c.writer.Write(data)
 }
 
-func (c *Communicator)WriteString(data string) (int,error) {
-	return c.writer.WriteString(data)
-}
-
-/**
- * wrtire string followed by MSG_TEXT_DEL flag
- */
-func (c *Communicator)WriteTextField(data string) (int,error) {
-	n, err := c.writer.WriteString(data)
-	if err != nil {
-		return n, err
-	}
-	err = c.writer.WriteByte(MSG_TEXT_DEL)
-	return n+1, err
-}
 
 func (c *Communicator)WriteInt64(data int64) error {
 	_,err := c.writer.Write(convert.Int64ToBytes(data))
@@ -155,6 +140,24 @@ func (c *Communicator)ReadInt16() (int16, error) {
 	return convert.ReadInt16(c.reader)
 }
 
+/**
+ * wrtire string followed by MSG_TEXT_DEL flag
+ */
+func (c *Communicator)WriteTextField(data string) (int,error) {
+	n, err := c.writer.WriteString(data)
+	if err != nil {
+		return n, err
+	}
+	err = c.writer.WriteByte(MSG_TEXT_DEL)
+	return n+1, err
+}
+
 func (c *Communicator)ReadTextField() (string, error) {
-	return c.reader.ReadString(MSG_TEXT_DEL)
+	text, err := c.reader.ReadString(MSG_TEXT_DEL)
+
+	if err == nil {
+		text = text[:len(text)-1]
+	}
+		
+	return text, err
 }
