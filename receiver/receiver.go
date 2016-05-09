@@ -161,7 +161,7 @@ func (s *Session)doBeforeSend(communicator *protocol.Communicator) error {
 	s.fileLen = len
 	s.fileName = fileName
 	
-	log.Println("Receive Body :: file length=",len, ", file name=", fileName)
+	log.Println("Receive Body :: file length=",s.fileLen, ", file name=", s.fileName)
 	
 	// Response MSG_PREPARE
 	var header protocol.Header
@@ -193,7 +193,7 @@ func (s *Session)doSend(communicator *protocol.Communicator) error {
 	length,err = fio.SaveFileTo(file, communicator.GetReader())
 	
 	if length != s.fileLen {
-		return common.NewError("File Length is the same. meta=", s.fileName, ", real=" , length)
+		return common.NewError("File Length is not the same. meta=", s.fileLen, ", real=" , length)
 	}
 	
 	log.Println("File Received::", s.fileName ,", size:", s.fileLen, ", file:" , file.Name() )
