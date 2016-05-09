@@ -188,8 +188,16 @@ func (s *Session)doSend(communicator *protocol.Communicator) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("To file " , file)
-	_,err = fio.SaveFileTo(file, communicator.GetReader())
+	
+	length,err = fio.SaveFileTo(file, communicator.GetReader())
+	
+	log.Println("File Received::", s.fileName ,", size:", s.fileLen, ", file:" , file.Name() )
+	
+	
+//	if err != nil {
+//		return err
+//	}
+	
 	return err
 }
 
