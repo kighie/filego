@@ -29,7 +29,13 @@ func Send(s SenderInfo) error {
 	var stopWatch common.StopWatch
 	
 	fileName, length, err := fio.GetFileInfo(s.FilePath)
-	s.FileName = fileName
+	
+	if s.FileName == "" {
+		s.FileName = fileName
+	} else {
+		fileName = s.FileName
+	}
+	
 	s.FileSize = length
 	
 	log.Println (s)
