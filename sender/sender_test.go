@@ -20,7 +20,7 @@ func sendTest(count int, filePath string, fileName string){
 	}
 	
 	var si = SenderInfo {
-		ReceiverAddr:"192.168.219.115:3000",
+		ReceiverAddr:"192.168.219.118:3000",
 		FileName: fileName,
 		FilePath:filePath,
 	}
