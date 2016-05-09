@@ -189,7 +189,12 @@ func (s *Session)doSend(communicator *protocol.Communicator) error {
 		return err
 	}
 	
+	var length int64
 	length,err = fio.SaveFileTo(file, communicator.GetReader())
+	
+	if length != s.fileLen {
+		return common.NewError("File Length is the same. meta=", s.fileName, ", real=" , length)
+	}
 	
 	log.Println("File Received::", s.fileName ,", size:", s.fileLen, ", file:" , file.Name() )
 	

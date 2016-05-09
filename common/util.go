@@ -4,6 +4,7 @@ import (
 	"net"
 	"fmt"
 	"io"
+	"errors"
 	"math/rand"
 	"crypto/sha1"
 	"encoding/base64"
@@ -17,4 +18,8 @@ func MakeUid(conn net.Conn) string {
 	bytes := h.Sum(nil)
 	encoded := base64.StdEncoding.EncodeToString(bytes)
 	return encoded
+}
+
+func NewError(v ...interface{}) error {
+	return errors.New(fmt.Sprint(v))
 }
